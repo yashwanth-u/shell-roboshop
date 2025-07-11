@@ -7,7 +7,7 @@ INSTANCES=("mongodb" "mysql" "redis" "catalogue" "user"
 ZONE_ID="Z05426313QK02PI64BDTM"
 DOMAIN_NAME="yashwanth.space"
 
-for instance in :"${INSTANCES[@]}"
+for instance in "${INSTANCES[@]}"
 do
     INSTANCE_ID=$(aws ec2 run-instances --image-id ami-09c813fb71547fc4f --instance-type t2.micro --security-group-ids sg-0650920f370e0b14f --tag-specifications "ResourceType=instance,
     Tags=[{Key=Name, Value=$instance}]" --query "Instances[0].InstanceId" --output text)
@@ -20,4 +20,22 @@ do
         Instances[0].PublicIpAddress'  --output text)
     fi
     echo "$instance IP address is $IP"
+    aws route53 change-resource-record-sets \
+    --hosted-zone-id "$ZONE_ID" \
+    --change-batch '
+        {
+    "Comment": "creating or updating a record set"
+    ,"Changes": [{
+      "Action"              : "UPSERT"
+      ,"ResourceRecordSet"  : {
+        "Name"              : "'$instance'.'$DOMAIN_NAME'"
+        ,"Type"             : "A"
+        ,"TTL"              : 1
+        ,"ResourceRecords"  : [{
+            "Value"         : '" $IP "'
+        }]
+      }
+    }]
+  }
+  '
 done
