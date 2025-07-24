@@ -76,7 +76,7 @@ systemctl start catalogue
 VALIDATE $? "Starting catalogue service"
 
 cp $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongodb.repo
-dnf install mongodb-org-shell -y &>>$LOG_FILE
+dnf install mongodb-mongosh -y &>>$LOG_FILE
 VALIDATE $? "Installing MongoDB shell"
 STATUS=$(mongosh --host mongodb.yashwanth.space --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
 if [ $STATUS -lt 0 ]
